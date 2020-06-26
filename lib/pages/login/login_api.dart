@@ -7,7 +7,7 @@ import 'dart:async';
 class LoginApi {
   static Future<ApiResponse<Usuario>> login(String login, String senha) async {
     try{
-      var url = 'http://486c0ca69102.ngrok.io/api/login';
+      var url = 'http://e6a8dbf8ece4.ngrok.io/api/login';
 
     Map<String,String> headers = { 
       "Content-type": "aplication/json"

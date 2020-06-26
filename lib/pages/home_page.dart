@@ -1,6 +1,7 @@
 import 'package:app_hidrometro/pages/marcacao/marcacao.dart';
 import 'package:app_hidrometro/pages/marcacao/marcacao_api.dart';
-import 'package:app_hidrometro/utils/alert.dart';
+import 'package:app_hidrometro/pages/marcacao/marcacao_form_page.dart';
+// import 'package:app_hidrometro/utils/alert.dart';
 import 'package:app_hidrometro/utils/nav.dart';
 import 'package:flutter/material.dart';
 import 'package:app_hidrometro/drawer_list.dart';
@@ -12,8 +13,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void _onClickAdicionarMarcacao() {
-      //push(context, CadastroPage());
-      alert(context, "Teste button?");
+      push(context, MarcacaoFormPage());
+      // alert(context, "Teste button?");
     }
 
     return Scaffold(
@@ -41,7 +42,7 @@ class HomePage extends StatelessWidget {
     if (snapshot.hasError) {
       return Container(
         child: Center(
-          child: Text("Deu Merda ai meu patrão"),
+          child: Text("Deu Ruim ai meu patrão"),
         ),
       );
     }

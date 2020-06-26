@@ -5,7 +5,7 @@ import 'dart:async';
 
 class MarcacaoApi {
  static Future<List<Marcacao>> getMarcacoes() async{
-   var url = 'http://486c0ca69102.ngrok.io/api/marcacao';
+   var url = 'http://e6a8dbf8ece4.ngrok.io/api/marcacao';
 
   print("GET > $url");
 
