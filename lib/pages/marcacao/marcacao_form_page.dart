@@ -1,19 +1,36 @@
+import 'package:app_hidrometro/pages/api_response.dart';
 import 'package:app_hidrometro/pages/endereco/endereco.dart';
-// import 'package:app_hidrometro/pages/endereco/endereco_api.dart';
-// import 'package:app_hidrometro/pages/marcacao/marcacao.dart';
+import 'package:app_hidrometro/pages/marcacao/marcacao.dart';
+import 'package:app_hidrometro/utils/alert.dart';
+import 'package:app_hidrometro/utils/nav.dart';
+import 'package:app_hidrometro/utils/url.dart';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'marcacao_api.dart';
+
 class MarcacaoFormPage extends StatefulWidget {
-  @override
+  final Marcacao marcacao;
+
+  MarcacaoFormPage({this.marcacao});
+
   _MarcacaoFormPageState createState() => _MarcacaoFormPageState();
 }
 
 class _MarcacaoFormPageState extends State<MarcacaoFormPage> {
   AutoCompleteTextField searchTextField;
   GlobalKey<AutoCompleteTextFieldState<Endereco>> key = new GlobalKey();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final tLeiturames = TextEditingController();
+  final tData = TextEditingController();
+  final thora = TextEditingController();
+  // final tEnderecoId = TextEditingController();
+
+  var _showProgress = false;
 
   Endereco selected;
 
@@ -23,7 +40,7 @@ class _MarcacaoFormPageState extends State<MarcacaoFormPage> {
   void getEnderecos() async {
     try {
       final response =
-          await http.get('http://e6a8dbf8ece4.ngrok.io/api/endereco');
+          await http.get('http://'+link+'/api/endereco');
       if (response.statusCode == 200) {
         enderecos = loadEnderecos(response.body);
         print('Enderecos ${enderecos.length}');
@@ -60,28 +77,119 @@ class _MarcacaoFormPageState extends State<MarcacaoFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Nova Marcação'),
-      ),
-      body: _francisco(),
-    );
+        appBar: AppBar(
+          title: Text('Nova Marcação'),
+        ),
+        body: SingleChildScrollView(
+          child: _francisco(),
+        ));
   }
 
   _francisco() {
-    return Column(children: [
-      new Padding(
-          child: new Container(child: _body()), padding: EdgeInsets.all(16.0)),
-      new Padding(
-          padding: EdgeInsets.fromLTRB(0.0, 64.0, 0.0, 0.0),
-          child: new Card(
-              child: selected != null
-                  ? new Column(children: [
-                      new ListTile(
-                          title: new Text(selected.numHidro),
-                          trailing: new Text(selected.rua)),
-                    ])
-                  : new Icon(Icons.cancel))),
-    ]);
+    return Stack(
+      children: <Widget>[
+        Container(
+          child: Column(children: <Widget>[
+            Padding(
+                child: Container(
+                  child: _body(),
+                ),
+                padding: EdgeInsets.all(16)),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Container(
+                child: selected != null
+                    ? Container(
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  "Rua: ",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                Text(selected.rua),
+                                Text(
+                                  "  Numero: ",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                Text(selected.numero)
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Text("id: "),
+                                Text(selected.id.toString())
+                              ],
+                            ),
+                            _form()
+                          ],
+                        ),
+                      )
+                    : Container(),
+              ),
+            )
+          ]),
+        ),
+      ],
+    );
+  }
+
+  _form() {
+    return Form(
+      key: this._formKey,
+      child: ListView(
+        shrinkWrap: true,
+        children: <Widget>[
+          TextFormField(
+            controller: tLeiturames,
+            keyboardType: TextInputType.text,
+            style: TextStyle(color: Colors.blue, fontSize: 20),
+            decoration: new InputDecoration(
+              hintText: '',
+              labelText: 'Leitura',
+            ),
+          ),
+          TextFormField(
+            controller: tData,
+            keyboardType: TextInputType.text,
+            style: TextStyle(color: Colors.blue, fontSize: 20),
+            decoration: new InputDecoration(
+              hintText: '',
+              labelText: 'Data',
+            ),
+          ),
+          TextFormField(
+            controller: thora,
+            keyboardType: TextInputType.text,
+            style: TextStyle(color: Colors.blue, fontSize: 20),
+            decoration: new InputDecoration(
+              hintText: '',
+              labelText: 'Hora',
+            ),
+          ),
+          Container(
+            height: 50,
+            margin: new EdgeInsets.only(top: 20.0),
+            child: RaisedButton(
+              color: Colors.blue,
+              child: _showProgress
+                  ? CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                  : Text(
+                      "Salvar",
+                      style: new TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                      ),
+                    ),
+              onPressed: _onClickSalvar,
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   _body() {
@@ -114,16 +222,42 @@ class _MarcacaoFormPageState extends State<MarcacaoFormPage> {
                     return row(item);
                   },
                 ),
-          // Padding(
-          //     padding: EdgeInsets.all(16.0),
-          //     child: Card(
-          //         child: selected != null
-          //             ? Column(
-          //                 children: <Widget>[Text(selected.numHidro)],
-          //               )
-          //             : Icon(Icons.cancel)))
         ],
       ),
     );
+  }
+
+  _onClickSalvar() async {
+
+    var m = Marcacao();
+    m.leituraMes = tLeiturames.text;
+    m.dia = tData.text;
+    m.hora = thora.text;
+    m.enderecoId = selected.id;
+
+    print("Marcacao: $m");
+
+    setState(() {
+      _showProgress = true;
+    });
+
+     print("Salvar a marcação $m");
+
+    ApiResponse<bool> response = await MarcacaoApi.save(m);
+
+    if(response.ok) {
+      alert(context, "Marcação Cadastrada com Sucesso", callback: (){
+        pop(context);
+      });
+    }else{
+      alert(context, response.msg);
+    }
+
+    setState(() {
+      _showProgress = false;
+    });
+
+    print("Fim.");
+
   }
 }

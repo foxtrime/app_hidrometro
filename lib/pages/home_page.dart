@@ -85,7 +85,7 @@ class HomePage extends StatelessWidget {
                       Row(
                         children: <Widget>[
                           Text('Data da ultima Marcação: '),
-                          Text(m.data),
+                          Text(m.dia),
                         ],
                       ),
                       Row(

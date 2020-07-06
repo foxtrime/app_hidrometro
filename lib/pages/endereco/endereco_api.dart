@@ -1,12 +1,13 @@
 import 'package:app_hidrometro/pages/endereco/endereco.dart';
+import 'package:app_hidrometro/utils/url.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'dart:async';
 
 class EnderecoApi {
  static Future<List<Endereco>> getEnderecos() async{
-   var url = 'http://e6a8dbf8ece4.ngrok.io/api/endereco';
-
+   var url = 'http://'+link+'/api/endereco';
+      
   print("GET > $url");
 
    var response = await http.get(url);

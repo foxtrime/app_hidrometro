@@ -5,7 +5,6 @@ class Endereco {
   String numero;
   String bairro;
   String complemento;
-  int enderecoId;
 
   Endereco(
       {this.id,
@@ -14,7 +13,6 @@ class Endereco {
       this.numero,
       this.bairro,
       this.complemento,
-      this.enderecoId,
       });
 
   Endereco.fromJson(Map<String, dynamic> json) {
@@ -24,7 +22,6 @@ class Endereco {
     numero = json['numero'];
     bairro = json['bairro'];
     complemento = json['complemento'];
-    enderecoId = json['endereco_id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -35,7 +32,6 @@ class Endereco {
     data['numero'] = this.numero;
     data['bairro'] = this.bairro;
     data['complemento'] = this.complemento;
-    data['endereco_id'] = this.enderecoId;
     return data;
   }
 

@@ -10,7 +10,7 @@ class MarcacaoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(marcacao.data),
+        title: Text(marcacao.dia),
       ),
       body: _body()
     );
