@@ -1,7 +1,6 @@
 import 'package:app_hidrometro/pages/marcacao/marcacao.dart';
 import 'package:app_hidrometro/pages/marcacao/marcacao_api.dart';
 import 'package:app_hidrometro/pages/marcacao/marcacao_form_page.dart';
-// import 'package:app_hidrometro/utils/alert.dart';
 import 'package:app_hidrometro/utils/nav.dart';
 import 'package:flutter/material.dart';
 import 'package:app_hidrometro/drawer_list.dart';
@@ -9,12 +8,35 @@ import 'dart:async';
 
 import 'marcacao/marcacao_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Marcacao> marcacoes;
+
+  final _streamController = StreamController<List<Marcacao>>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadData();
+  }
+
+  _loadData() async {
+    List<Marcacao> marcacoes = await MarcacaoApi.getMarcacoes();
+
+    _streamController.add(marcacoes);
+
+    return marcacoes;
+  }
+
   @override
   Widget build(BuildContext context) {
     void _onClickAdicionarMarcacao() {
       push(context, MarcacaoFormPage());
-      // alert(context, "Teste button?");
     }
 
     return Scaffold(
@@ -30,33 +52,31 @@ class HomePage extends StatelessWidget {
   }
 
   _body() {
-    Future<List<Marcacao>> marcacoes = MarcacaoApi.getMarcacoes();
-
-    return FutureBuilder(
-      future: marcacoes,
-      builder: _builder,
+    return StreamBuilder(
+      stream: _streamController.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text("Dale"),
+          );
+        }
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        List<Marcacao> marcacoes = snapshot.data;
+        // return _listView(marcacoes);
+        return RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: _listView(marcacoes),
+        );
+      },
     );
   }
 
-  Container _builder(context, snapshot) {
-    if (snapshot.hasError) {
-      return Container(
-        child: Center(
-          child: Text("Deu Ruim ai meu patrão"),
-        ),
-      );
-    }
-
-    if (!snapshot.hasData) {
-      return Container(
-        child: (Center(
-          child: CircularProgressIndicator(),
-        )),
-      );
-    }
-
-    List<Marcacao> marcacoes = snapshot.data;
-    return _listView(marcacoes);
+  Future<void> _onRefresh() {
+    return _loadData();
   }
 
   Container _listView(List<Marcacao> marcacoes) {
@@ -103,5 +123,12 @@ class HomePage extends StatelessWidget {
             );
           }),
     );
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+
+    _streamController.close();
   }
 }
